@@ -1,0 +1,36 @@
+ファイルとともに送信するパラメータを"名前=値&名前=値&..."の形式で入力してください。
+
+次の文字列は提出者のユーザ情報に置換されます。
+
+{username}
+: ログインID
+
+{fullname}
+: 氏名
+
+{lastname}
+: 姓
+
+{firstname}
+: 名
+
+{email}
+: メールアドレス
+
+{lang}
+: ユーザのデフォルト言語
+
+{school}, {university}, {institution}, {schoolname}
+: 学校名
+
+{faculty}, {affiliation}
+: 所属学部・学科
+
+{idnumber}, {studentnumber}
+: 学籍番号
+
+{group}
+: グループ名
+
+{ext}
+: アップロードされたファイルの拡張子

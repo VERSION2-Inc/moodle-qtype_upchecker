@@ -1,0 +1,54 @@
+提出ファイルの保存時の名前を入力してください。
+
+次の文字列は提出時の情報に置換されます。
+
+{filename}
+: オリジナルのファイル名
+
+{ext}
+: オリジナルの拡張子
+
+{quizname}
+: 小テスト名
+
+{quizid}
+: 小テストID
+
+{cmid}
+: コースモジュールID
+
+{questionname}
+: 問題名
+
+{questionid}
+: 問題ID
+
+{lastname}
+: 姓
+
+{firstname}
+: 名
+
+{fullname}
+: 氏名
+
+{username}
+: ユーザID
+
+{idnumber}
+: 学籍番号
+
+{email}
+: メールアドレス
+
+{institution}
+: 所属校
+
+{department}
+: 学科
+
+{date}
+: 日付
+
+{time}
+: 時刻

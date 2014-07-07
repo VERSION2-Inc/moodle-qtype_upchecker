@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="question/type/upchecker/db" VERSION="20130509" COMMENT="XMLDB file for Moodle question/type/upchecker"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="question_upchecker" COMMENT="プログラミング問題" NEXT="question_upchecker_attempts">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="questionid"/>
+        <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="questionurl"/>
+        <FIELD NAME="questionurl" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="questionid" NEXT="caution"/>
+        <FIELD NAME="caution" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="questionurl" NEXT="example"/>
+        <FIELD NAME="example" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="caution" NEXT="hint"/>
+        <FIELD NAME="hint" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="example" NEXT="duedate"/>
+        <FIELD NAME="duedate" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="hint" NEXT="permitlate"/>
+        <FIELD NAME="permitlate" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="duedate" NEXT="lategrade"/>
+        <FIELD NAME="lategrade" TYPE="number" LENGTH="12" NOTNULL="true" DEFAULT="0" SEQUENCE="false" DECIMALS="7" PREVIOUS="permitlate" NEXT="checkurl"/>
+        <FIELD NAME="checkurl" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="lategrade" NEXT="fileparam"/>
+        <FIELD NAME="fileparam" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" PREVIOUS="checkurl" NEXT="restparams"/>
+        <FIELD NAME="restparams" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="fileparam" NEXT="uploadfilename"/>
+        <FIELD NAME="uploadfilename" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" PREVIOUS="restparams" NEXT="gradetype"/>
+        <FIELD NAME="gradetype" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" PREVIOUS="uploadfilename" NEXT="gradetag"/>
+        <FIELD NAME="gradetag" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" PREVIOUS="gradetype" NEXT="feedbacktag"/>
+        <FIELD NAME="feedbacktag" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" PREVIOUS="gradetag" NEXT="storagetype"/>
+        <FIELD NAME="storagetype" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" PREVIOUS="feedbacktag"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="questionid"/>
+        <KEY NAME="questionid" TYPE="foreign" FIELDS="questionid" REFTABLE="question" REFFIELDS="id" PREVIOUS="primary"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="question_upchecker_attempts" COMMENT="プログラミング問題受験" PREVIOUS="question_upchecker">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="question"/>
+        <FIELD NAME="question" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="questionattempt"/>
+        <FIELD NAME="questionattempt" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="question" NEXT="serverresult"/>
+        <FIELD NAME="serverresult" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="questionattempt" NEXT="feedback"/>
+        <FIELD NAME="feedback" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="serverresult"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="question"/>
+        <KEY NAME="question" TYPE="foreign" FIELDS="question" REFTABLE="question" REFFIELDS="id" PREVIOUS="primary" NEXT="questionattempt"/>
+        <KEY NAME="questionattempt" TYPE="foreign" FIELDS="questionattempt" REFTABLE="question_attempts" REFFIELDS="id" PREVIOUS="question"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
