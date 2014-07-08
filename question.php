@@ -101,13 +101,6 @@ class qtype_upchecker_question extends question_graded_automatically {
      * @return array
      */
     public function grade_response(array $response) {
-
-        xdebug_print_function_stack();
-        var_dump($response);
-        echo'<pre>';debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-
-        die;
-        error_log('$this: ' . var_export($this, true));
         $fraction = 0;
 
         $file = $this->get_uploaded_file();
@@ -133,7 +126,7 @@ class qtype_upchecker_question extends question_graded_automatically {
                 $this->save_upchecker_attempt();
             }
         } else {
-            error_log('Uploaded file not loaded');
+        	error_log('Uploaded file not loaded');
         }
 
         return array($fraction, question_state::graded_state_for_fraction($fraction));
@@ -207,11 +200,8 @@ class qtype_upchecker_question extends question_graded_automatically {
     public function get_uploaded_file() {
         global $DB;
 
-//         var_dump($this);
-
         $steps = $DB->get_records('question_attempt_steps',
                 array('questionattemptid' => $this->questionattemptid), 'sequencenumber DESC', 'id');
-        error_log('steps: '.var_export($steps, true));
 
         $contextid = $DB->get_field_sql('
         		SELECT qu.contextid
@@ -227,18 +217,12 @@ class qtype_upchecker_question extends question_graded_automatically {
 
         $fs = get_file_storage();
 
-        $found=null;
         foreach ($steps as $step) {
             if ($files = $fs->get_area_files($contextid, 'question', 'response_answer', $step->id,
                     'itemid, filepath, filename', false)) {
-                    error_log('files: '.var_export($files, true));
-                    if (!$found) {
-                        $found=reset($files);
-                    }
-//                 return reset($files);
+                return reset($files);
             }
         }
-        return $found;
         return null;
     }
 

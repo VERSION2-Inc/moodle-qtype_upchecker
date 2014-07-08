@@ -197,7 +197,7 @@ class qtype_upchecker_dropbox extends oauth_helper {
 
     private function check_error(\stdClass $data) {
         if (!empty($data->error)) {
-            throw new moodle_exception('dropboxerror', 'qtype_upchecker', '', serialize($data->error), serialize($data->error));
+            throw new moodle_exception('dropboxerror', 'qtype_upchecker', '', $data->error);
         }
     }
 }

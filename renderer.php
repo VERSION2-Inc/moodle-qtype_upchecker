@@ -58,7 +58,6 @@ class qtype_upchecker_renderer extends qtype_renderer {
                                     'value' => $pickeroptions->itemid
                             )
                     );
-                $o .= \html_writer::empty_tag('input', ['name' => 'hash','value'=>$pickeroptions->itemid]);
                 $o .= $this->container_end();
             } else {
                 $o .= uc::str('overduecantsubmit');

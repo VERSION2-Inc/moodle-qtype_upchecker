@@ -68,7 +68,7 @@ class remote_grading {
         curl_close($ch);
 
 //         @unlink($tmppath);
-//         fulldelete($tmpdir);
+        fulldelete($tmpdir);
 
         return true;
     }
