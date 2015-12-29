@@ -1,11 +1,13 @@
-<?php // $Id: remote_grading.php 296 2014-04-16 00:04:48Z yama $
+<?php
 /**
- * remotegradelib.php
+ * Programming question type for Moodle
  *
- * @author VERSION2 Inc.
- * @version $Id: remote_grading.php 296 2014-04-16 00:04:48Z yama $
- * @package cch19
+ * @package    qtype
+ * @subpackage upchecker
+ * @copyright  VERSION2, Inc.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -36,7 +38,7 @@ class remote_grading {
     public function post_file($url, $fileparam, stored_file $storedfile, $restparams, $vars = null, $user = null) {
         global $CFG, $USER;
 
-        $restparams = $this->replace_param_vars($restparams, $vars);
+        $restparams = $this->replace_param_vars($restparams, $user);
         if (!is_array($restparams)) {
             $restparams = $this->query2array($restparams);
         }
@@ -86,7 +88,7 @@ class remote_grading {
     public function post_data($url, $params, $restparams, $vars = null, $user = null) {
         global $CFG, $USER;
 
-        $restparams = $this->replace_param_vars($restparams, $vars);
+        $restparams = $this->replace_param_vars($restparams, $user);
         if (!is_array($restparams)) {
             $restparams = $this->query2array($restparams);
         }

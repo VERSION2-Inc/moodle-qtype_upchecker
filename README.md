@@ -18,4 +18,4 @@
 
 本ソフトウェアに起因するいかなる問題等について弊社は責任を負いません。予めご了承ください。 本ソフトウェアのライセンスはmoodle上のライセンスに従います(GNU GPL v2)
 
-We are not responsible for any problem caused by this software. This software follows the license policy of Moodle (GNU GPL v2)
+We are not responsible for any problem caused by this software. This software follows the license policy of Moodle (GNU GPL v3)

@@ -1,9 +1,19 @@
 <?php
+/**
+ * Programming question type for Moodle
+ *
+ * @package    qtype
+ * @subpackage upchecker
+ * @copyright  VERSION2, Inc.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 defined('MOODLE_INTERNAL') || die();
+
+use upchecker\upchecker as uc;
 
 require_once $CFG->dirroot . '/question/type/upchecker/locallib.php';
 require_once $CFG->dirroot . '/question/type/upchecker/class/remote_grading.php';
-use upchecker\upchecker as uc;
 
 class qtype_upchecker_question extends question_graded_automatically {
     /**
@@ -41,6 +51,8 @@ class qtype_upchecker_question extends question_graded_automatically {
      * @var stdClass
      */
     public $resyncfileuser;
+    protected $timecompleted;
+    protected $step;
 
     /**
      *
@@ -60,6 +72,10 @@ class qtype_upchecker_question extends question_graded_automatically {
     public function apply_attempt_state(question_attempt_step $step) {
         global $DB;
 
+        $this->step = $step;
+
+        $this->timecompleted = $step->get_timecreated();
+
         $id = $step->get_qt_var('_upcheckerattempt');
         $this->upcheckerattempt = $DB->get_record('question_upchecker_attempts', array('id' => $id));
 
@@ -71,8 +87,6 @@ class qtype_upchecker_question extends question_graded_automatically {
         } else {
             $this->questionattemptid = $this->upcheckerattempt->questionattempt;
         }
-
-        parent::apply_attempt_state($step);
     }
 
     /**
@@ -101,16 +115,18 @@ class qtype_upchecker_question extends question_graded_automatically {
      * @return array
      */
     public function grade_response(array $response) {
-        $fraction = 0;
+        global $DB;
 
-        $file = $this->get_uploaded_file();
+        $fraction = 0;
 
         if ($file = $this->get_uploaded_file()) {
             $this->store_file($file);
 
+            $user = $DB->get_record('user', array('id' => $this->step->get_user_id()), '*', MUST_EXIST);
+
             $remotegrading = new remote_grading();
 
-            $remotegrading->post_file($this->checkurl, $this->fileparam, $file, $this->restparams);
+            $remotegrading->post_file($this->checkurl, $this->fileparam, $file, $this->restparams, null, $user);
 
             if ($this->gradetype != 'manual') {
                 if ($this->gradetype == 'xml') {
@@ -126,7 +142,7 @@ class qtype_upchecker_question extends question_graded_automatically {
                 $this->save_upchecker_attempt();
             }
         } else {
-        	error_log('Uploaded file not loaded');
+            error_log('Uploaded file not loaded');
         }
 
         return array($fraction, question_state::graded_state_for_fraction($fraction));
@@ -204,15 +220,15 @@ class qtype_upchecker_question extends question_graded_automatically {
                 array('questionattemptid' => $this->questionattemptid), 'sequencenumber DESC', 'id');
 
         $contextid = $DB->get_field_sql('
-        		SELECT qu.contextid
-        		FROM {question_usages} qu
-        			JOIN {question_attempts} qa ON qu.id = qa.questionusageid
-        		WHERE qa.id = :questionattemptid
-        		',
-        		['questionattemptid' => $this->questionattemptid]
+                SELECT qu.contextid
+                FROM {question_usages} qu
+                    JOIN {question_attempts} qa ON qu.id = qa.questionusageid
+                WHERE qa.id = :questionattemptid
+                ',
+                ['questionattemptid' => $this->questionattemptid]
         );
         if (!$contextid) {
-        	return null;
+            return null;
         }
 
         $fs = get_file_storage();
@@ -238,7 +254,6 @@ class qtype_upchecker_question extends question_graded_automatically {
 
             $tmpfile = $this->get_tmp_path();
             $file->copy_content_to($tmpfile);
-//             var_dump($file);
 
             $setting = $DB->get_record('block_upchecker_setting_crs', array('course' => $COURSE->id));
 
@@ -265,90 +280,90 @@ class qtype_upchecker_question extends question_graded_automatically {
     }
 
     public function set_replace_params(stored_file $file) {
-    	$filename = $file->get_filename();
-    	$this->replaceparams = (object)array(
-    			'origname' => pathinfo($filename, PATHINFO_FILENAME),
-    			'origext' => pathinfo($filename, PATHINFO_EXTENSION)
-    	);
+        $filename = $file->get_filename();
+        $this->replaceparams = (object)array(
+                'origname' => pathinfo($filename, PATHINFO_FILENAME),
+                'origext' => pathinfo($filename, PATHINFO_EXTENSION)
+        );
     }
 
-	/**
-	 *
-	 * @param string $filename
-	 * @param stored_file $file
-	 * @return string
-	 */
-	public function replace_upload_filename($filename, stored_file $file) {
-		return preg_replace_callback('/\{([a-z_]+?)\}/',
-				// array($this, 'replace_upload_filename_callback'),
-				function ($matches) use($file) {
-					global $USER, $DB;
+    /**
+     *
+     * @param string $filename
+     * @param stored_file $file
+     * @return string
+     */
+    public function replace_upload_filename($filename, stored_file $file) {
+        return preg_replace_callback('/\{([a-z_]+?)\}/',
+                // array($this, 'replace_upload_filename_callback'),
+                function ($matches) use($file) {
+                    global $USER, $DB;
 
-					$varname = $matches[1];
-					// if ($this->resyncfileuser) {
-					// $user = $this->resyncfileuser;
-					// } else {
-					// $user = $USER;
-					// }
-					if ($file) {
-						$user = $DB->get_record('user', [
-								'id' => $file->get_userid()
-						]);
-					} else {
-						$user = $USER;
-					}
-					$quizattempt = $this->get_quiz_attempt_by_file_item_id($file->get_itemid());
+                    $varname = $matches[1];
+                    // if ($this->resyncfileuser) {
+                    // $user = $this->resyncfileuser;
+                    // } else {
+                    // $user = $USER;
+                    // }
+                    if ($file) {
+                        $user = $DB->get_record('user', [
+                                'id' => $file->get_userid()
+                        ]);
+                    } else {
+                        $user = $USER;
+                    }
+                    $quizattempt = $this->get_quiz_attempt_by_file_item_id($file->get_itemid());
 
-					switch ($varname) {
-						case 'filename':
-							// return $this->replaceparams->origname;
-							return pathinfo($file->get_filename(), PATHINFO_FILENAME);
-						case 'ext':
-							// return $this->replaceparams->origext;
-							return pathinfo($file->get_filename(), PATHINFO_EXTENSION);
-						case 'quizname':
-							$quiz = $this->get_quiz();
-							return $quiz->name;
-						case 'quizid':
-							$quiz = $this->get_quiz();
-							return $quiz->id;
-						case 'cmid':
-							$quiz = $this->get_quiz();
-							$cm = get_coursemodule_from_instance('quiz', $quiz->id);
-							return $cm->id;
-						case 'questionname':
-							return $this->name;
-						case 'questionid':
-							return $this->id;
-						case 'lastname':
-							return $user->lastname;
-						case 'firstname':
-							return $user->firstname;
-						case 'fullname':
-							return fullname($user);
-						case 'username':
-							return $user->username;
-						case 'idnumber':
-							return $user->idnumber;
-						case 'email':
-							return $user->email;
-						case 'institution':
-							return $user->institution;
-						case 'department':
-							return $user->department;
-						case 'date':
-							// return date('Y-m-d', $this->get_question_attempt_field('timemodified'));
+                    switch ($varname) {
+                        case 'filename':
+                            // return $this->replaceparams->origname;
+                            return pathinfo($file->get_filename(), PATHINFO_FILENAME);
+                        case 'ext':
+                            // return $this->replaceparams->origext;
+                            return pathinfo($file->get_filename(), PATHINFO_EXTENSION);
+                        case 'quizname':
+                            $quiz = $this->get_quiz();
+                            return $quiz->name;
+                        case 'quizid':
+                            $quiz = $this->get_quiz();
+                            return $quiz->id;
+                        case 'cmid':
+                            $quiz = $this->get_quiz();
+                            $cm = get_coursemodule_from_instance('quiz', $quiz->id);
+                            return $cm->id;
+                        case 'questionname':
+                            return $this->name;
+                        case 'questionid':
+                            return $this->id;
+                        case 'lastname':
+                            return $user->lastname;
+                        case 'firstname':
+                            return $user->firstname;
+                        case 'fullname':
+                            return fullname($user);
+                        case 'username':
+                            return $user->username;
+                        case 'idnumber':
+                            return $user->idnumber;
+                        case 'email':
+                            return $user->email;
+                        case 'institution':
+                            return $user->institution;
+                        case 'department':
+                            return $user->department;
+                        case 'date':
+                            // return date('Y-m-d', $this->get_question_attempt_field('timemodified'));
 // 							return date('Y-m-d', $file->get_timemodified());
-							return date('Y-m-d', $quizattempt->timestart);
-							case 'time':
-							// return date('H-i-s', $this->get_question_attempt_field('timemodified'));
+                            return date('Y-m-d', $quizattempt->timestart);
+                            case 'time':
+                            // return date('H-i-s', $this->get_question_attempt_field('timemodified'));
 // 							return date('H-i-s', $file->get_timemodified());
-							return date('H-i-s', $quizattempt->timestart);
-						default:
-							return $matches[0];
-					}
-				}, $filename);
-	}
+                            return date('H-i-s', $quizattempt->timestart);
+                        default:
+                            return $matches[0];
+                    }
+                }, $filename);
+    }
 
     /**
      *
@@ -356,15 +371,15 @@ class qtype_upchecker_question extends question_graded_automatically {
      * @return string
      */
     private function get_question_attempt_field($field) {
-    	global $DB;
+        global $DB;
 
-    	if (!$this->questionattempt) {
-    		$this->questionattempt
-    		    = $DB->get_record('question_attempts', array('id' => $this->questionattemptid),
-    		            '*', MUST_EXIST);
-    	}
+        if (!$this->questionattempt) {
+            $this->questionattempt
+                = $DB->get_record('question_attempts', array('id' => $this->questionattemptid),
+                        '*', MUST_EXIST);
+        }
 
-    	return $this->questionattempt->$field;
+        return $this->questionattempt->$field;
     }
 
     public function save_upchecker_attempt() {
@@ -378,7 +393,7 @@ class qtype_upchecker_question extends question_graded_automatically {
      * @return boolean
      */
     public function is_overdue() {
-        return $this->duedate && time() >= $this->duedate;
+        return $this->duedate && $this->timecompleted >= $this->duedate;
     }
 
     /**
@@ -427,17 +442,17 @@ class qtype_upchecker_question extends question_graded_automatically {
      * @return \stdClass
      */
     private function get_quiz_attempt_by_file_item_id($itemid) {
-    	global $DB;
+        global $DB;
 
-    	return $DB->get_record_sql('
-    			SELECT qa.*
-    			FROM {quiz_attempts} qa
-    				JOIN {question_usages} qu ON qa.uniqueid = qu.id
-    				JOIN {question_attempts} qta ON qu.id = qta.questionusageid
-    				JOIN {question_attempt_steps} qtas ON qta.id = qtas.questionattemptid
-    			WHERE qtas.id = :itemid
-    			',
-    			['itemid' => $itemid]
+        return $DB->get_record_sql('
+                SELECT qa.*
+                FROM {quiz_attempts} qa
+                    JOIN {question_usages} qu ON qa.uniqueid = qu.id
+                    JOIN {question_attempts} qta ON qu.id = qta.questionusageid
+                    JOIN {question_attempt_steps} qtas ON qta.id = qtas.questionattemptid
+                WHERE qtas.id = :itemid
+                ',
+                ['itemid' => $itemid]
         );
     }
 
@@ -446,14 +461,14 @@ class qtype_upchecker_question extends question_graded_automatically {
      * @return string|boolean
      */
     private function get_tmp_path() {
-    	$dir = make_temp_directory('upchecker');
+        $dir = make_temp_directory('upchecker');
 
-    	for ($i = 0; $i < 30; $i++) {
-    		$tmpfile = "$dir/dbup_".sprintf('%04X', mt_rand(0, 0xFFFF));
-    		if (!file_exists($tmpfile)) {
-    			return $tmpfile;
-    		}
-    	}
-    	return false;
+        for ($i = 0; $i < 30; $i++) {
+            $tmpfile = "$dir/dbup_".sprintf('%04X', mt_rand(0, 0xFFFF));
+            if (!file_exists($tmpfile)) {
+                return $tmpfile;
+            }
+        }
+        return false;
     }
 }

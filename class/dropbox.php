@@ -1,4 +1,13 @@
 <?php
+/**
+ * Programming question type for Moodle
+ *
+ * @package    qtype
+ * @subpackage upchecker
+ * @copyright  VERSION2, Inc.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once($CFG->libdir.'/oauthlib.php');
 
 class qtype_upchecker_dropbox extends oauth_helper {

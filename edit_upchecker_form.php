@@ -1,4 +1,13 @@
 <?php
+/**
+ * Programming question type for Moodle
+ *
+ * @package    qtype
+ * @subpackage upchecker
+ * @copyright  VERSION2, Inc.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once $CFG->dirroot . '/question/type/upchecker/locallib.php';
@@ -108,8 +117,10 @@ class qtype_upchecker_edit_form extends question_edit_form {
 
         $mform->addElement('text', 'questionurl', uc::str('questionhtml'),
                 array('size' => 60));
+        $mform->setType('questionurl', PARAM_TEXT);
         $mform->addElement('text', 'uploadfilename', uc::str('uploadfilename'),
                 array('size' => 60));
+        $mform->setType('uploadfilename', PARAM_TEXT);
         $mform->addHelpButton('uploadfilename', 'uploadfilename', 'qtype_upchecker');
 
         //        $mform->addElement('static', 'answersinstruct', get_string('correctanswers', 'quiz'), get_string('filloutoneanswer', 'quiz'));
@@ -124,6 +135,8 @@ class qtype_upchecker_edit_form extends question_edit_form {
 //         $mform->setDefault('storagetype', 'dropbox');
 
         $mform->addElement('hidden', 'storagelogin', '');
+        $mform->setType('storagelogin', PARAM_TEXT);
         $mform->addElement('hidden', 'storagepassword', '');
+        $mform->setType('storagepassword', PARAM_TEXT);
     }
 }
