@@ -6,7 +6,8 @@
 
 ## 制作
 
-公立はこだて未来大学、株式会社VERSION2
+公立はこだて未来大学　伊藤恵先生 (http://www.fun.ac.jp/)
+株式会社VERSION2 (http://ve2.jp)
 
 ## インストール
 
